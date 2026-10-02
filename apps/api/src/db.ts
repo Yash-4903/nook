@@ -1,12 +1,10 @@
 import { drizzle } from 'drizzle-orm/node-postgres';
 import { Pool } from 'pg';
 
+const databaseUrl = process.env.DATABASE_URL;
+
 const pool = new Pool({
-    host: "localhost",
-    port: 5432,
-    user: "nook",
-    password: "nook_dev_password",
-    database: "nook"
+    connectionString: databaseUrl,
 });
 
 export const db = drizzle(pool);
