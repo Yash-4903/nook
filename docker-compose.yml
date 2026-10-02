@@ -1,0 +1,19 @@
+services:
+  postgres:
+    image: postgres:16
+    container_name: nook-postgres
+    restart: unless-stopped
+
+    environment:
+      POSTGRES_USER: nook
+      POSTGRES_PASSWORD: nook_dev_password
+      POSTGRES_DB: nook
+
+    ports:
+      - "5432:5432"
+
+    volumes:
+      - nook-postgres-data:/var/lib/postgresql/data
+
+volumes:
+  nook-postgres-data:
