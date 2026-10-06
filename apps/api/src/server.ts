@@ -1,5 +1,5 @@
 import express from 'express';
-import roomRouter from "./routes/rooms";
+import roomRouter from "./routes/room.routes";
 
 const app = express();
 

@@ -15,6 +15,7 @@
   "license": "ISC",
   "packageManager": "pnpm@10.32.1",
   "dependencies": {
+    "bcrypt-ts": "^9.0.2",
     "dotenv": "^18.0.5",
     "drizzle-orm": "^0.45.3",
     "express": "^5.2.1",

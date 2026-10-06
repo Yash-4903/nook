@@ -11,3 +11,16 @@ export const rooms = pgTable(
         uniqueIndex("rooms_code_unique").on(table.code),
     ]
 )
+
+export const users = pgTable(
+    "users",
+    {
+        id: uuid("id").defaultRandom().primaryKey(),
+        emial: varchar('email', { length: 255 }).notNull(),
+        passwordHash: varchar("password_hash", { length: 255}).notNull(),
+        createdAt: timestamp("created_at").defaultNow().notNull(),
+    },
+    (table) => ({
+        emailUniqueIndex: uniqueIndex("user_email_unique").on(table.emial)
+    }),
+);
