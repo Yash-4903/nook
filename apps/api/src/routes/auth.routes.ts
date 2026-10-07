@@ -2,8 +2,9 @@ import { Router } from "express";
 import { db } from "../db";
 import { users } from "../db/schema";
 import { eq } from "drizzle-orm";
-import bcrypt from "bcrypt-ts";
+import {compare} from "bcrypt-ts";
 import { hashPassword } from "../utils/passwordHash";
+import jwt from 'jsonwebtoken'
 
 const router = Router();
 
@@ -20,7 +21,7 @@ router.post("/signIn", async (req, res) =>{
         const [user] = await db
             .select()
             .from(users)
-            .where(eq(users.emial, email));
+            .where(eq(users.email, email));
 
         if(!user) {
             return res.status(401).json({
@@ -28,7 +29,7 @@ router.post("/signIn", async (req, res) =>{
             });
         }
 
-        const passwordValid = await bcrypt.compare(
+        const passwordValid = await compare(
             password,
             user.passwordHash
         );
@@ -39,21 +40,30 @@ router.post("/signIn", async (req, res) =>{
             })
         }
 
+        const JWT_SECRET  = process.env.JWT_SECRET!;
+
+        const token = jwt.sign(
+            { id: user.id, emial: user.email},
+            JWT_SECRET,
+            { expiresIn: '1d'}
+        )
+
         res.status(200).json({
             message: "Signed in successfully",
             user: {
                 id: user.id,
-                email: user.emial,
-            }
+                email: user.email   
+            }, token
         })
     } catch (error) {
+        console.error("Signip error:", error);
         res.status(500).json({
             error: "Failed to signin"
         })
     }
 });
 
-router.post("/signUp", async (req, res) =>{
+router.post("/signup", async (req, res) =>{
     try {
         const { email, password } = req.body;
 
@@ -68,7 +78,7 @@ router.post("/signUp", async (req, res) =>{
         await db
           .insert(users)
           .values({
-            emial: email,
+            email: email,
             passwordHash,
         })
 
@@ -76,6 +86,7 @@ router.post("/signUp", async (req, res) =>{
             message: "Signup Successfully"
         })       
     } catch (error) {
+        console.error("Signup error:", error);
         return res.status(500).json({
             error: "Failed to signup"
         })

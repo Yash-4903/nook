@@ -5,7 +5,8 @@ export const rooms = pgTable(
     {
         id: uuid("id").defaultRandom().primaryKey(),
         code: varchar("code", { length: 6}).notNull(),
-        createdAt: timestamp("createdAt").defaultNow().notNull(),
+        createdBy: uuid("created_by").references(() => users.id),
+        createdAt: timestamp("created_at").defaultNow().notNull(),
     },
     (table) => [
         uniqueIndex("rooms_code_unique").on(table.code),
@@ -16,11 +17,11 @@ export const users = pgTable(
     "users",
     {
         id: uuid("id").defaultRandom().primaryKey(),
-        emial: varchar('email', { length: 255 }).notNull(),
+        email: varchar('email', { length: 255 }).notNull(),
         passwordHash: varchar("password_hash", { length: 255}).notNull(),
         createdAt: timestamp("created_at").defaultNow().notNull(),
     },
     (table) => ({
-        emailUniqueIndex: uniqueIndex("user_email_unique").on(table.emial)
+        emailUniqueIndex: uniqueIndex("user_email_unique").on(table.email)
     }),
 );

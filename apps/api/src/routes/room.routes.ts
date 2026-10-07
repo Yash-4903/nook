@@ -2,18 +2,22 @@ import { Router } from "express";
 import { generateRoomCode } from "../utils/room-code";
 import { db } from "../db";
 import { rooms } from "../db/schema";
-import { eq } from 'drizzle-orm';
+import { eq, and } from 'drizzle-orm';
+import { authMiddleware } from "../utils/auth.middleware";
+import { Request, Response } from "express";
 
 const router = Router();
 
-router.post("/", async (req, res) => {
+router.post("/", authMiddleware, async (req, res) => {
     try {
+
         const code = generateRoomCode();
 
         const [room] = await db 
             .insert(rooms)
             .values({
                 code,
+                createdBy : req.user.userId
             })
             .returning();
         
@@ -29,7 +33,7 @@ router.post("/", async (req, res) => {
     }
 });
 
-router.get("/:code", async (req, res) => {
+router.get("/:code", authMiddleware, async (req: Request<{ code: string }>, res) => {
     try {
         const { code } = req.params;
 
@@ -56,13 +60,18 @@ router.get("/:code", async (req, res) => {
     }
 });
 
-router.delete("/:code", async (req, res) => {
+router.delete("/:code", authMiddleware, async (req: Request<{ code: string }>, res) => {
     try {
         const { code } = req.params;
 
         const [room] = await db
             .delete(rooms)
-            .where(eq(rooms.code, code))
+            .where(
+                and(
+                    (eq(rooms.code, code)),
+                    (eq(rooms.createdBy, req.user.userId))
+                )
+            )
             .returning();
         
         if(!room) {
@@ -70,6 +79,10 @@ router.delete("/:code", async (req, res) => {
                 error: "Room not found"
             });
         }
+
+        res.status(200).json({
+            message: "Room deleted successfully"
+        })
 
     } catch (error) {
         console.log(error);
